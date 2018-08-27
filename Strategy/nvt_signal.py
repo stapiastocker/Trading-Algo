@@ -15,7 +15,7 @@ import numpy as np
 def nvt_signal(Refresh_Data = False, df = pd.DataFrame(data={'Date':[0], 'Close':[0]})):
     if Refresh_Data == True:
         headers = {'USER-AGENT': 'Mozilla/5.0 (iPad; U; CPU OS 3_2_1 like Mac OS X; en-us) AppleWebKit/531.21.10 (KHTML, like Gecko) Mobile/7B405'}
-        sauce = requests.get('https://plot.ly/~bastapia/5.embed', headers = headers) #They are actual shits. 
+        sauce = requests.get('https://plot.ly/~bastapia/5.embed', headers = headers) 
         soup = bs.BeautifulSoup(sauce.content, 'lxml')
         
         table = soup.table
@@ -32,14 +32,14 @@ def nvt_signal(Refresh_Data = False, df = pd.DataFrame(data={'Date':[0], 'Close'
         
         #Code is neater now. 
         df_NVT = pd.DataFrame(data = Time_NVT)
-        with open('NVT_Signal.csv', 'w') as f:
+        with open('NVT.csv', 'w') as f:
             df_NVT.to_csv(f)
     else:
-        df_NVT = pd.read_csv('NVT_Signal.csv')
+        df_NVT = pd.read_csv('NVT.csv')
         df_NVT.drop(df_NVT.columns[0], axis=1, inplace = True)
     
     #getting price data for Time values
-    df_2 = df.loc[df['Date'].isin(df_NVT['Time'])] #Boom. Now we have the code for each date of NVT. Really don't like the code, change once it is all working. 
+    df_2 = df.loc[df['Date'].isin(df_NVT['Time'])] 
     
     #Add Closing prices to df_NVT
     df_NVT['Close'] = df_2['Close'].values
