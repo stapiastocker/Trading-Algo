@@ -13,7 +13,7 @@ from pathlib import Path
 #Own Modules
 import Benchmark_Strategy as BStrat
 import SortinoRatio as sr
-import nvtSignal as nvt
+import nvt_signal as nvt
 style.use("ggplot")
 
 prices = 'crypto_data_download/coindesk-bpi-USD-close_data-2010-07-18_2018-08-23.csv'  # 'bitcoin-historical-data/coindesk-bpi-USD-2017-09-03_2018-08-15.csv'
@@ -31,18 +31,18 @@ def compile_data(dir_csv = prices, new_csv =prices_timestamp):
         
         with open(new_csv, 'w') as f:
             df['Date'] = df['Date'].apply(lambda x: x.rstrip('00:00'))
-#            try: #The returns the correct date, I do not know why it is giving the ValueError. 
+#            try:
 #                df['Date'] = pd.to_datetime(df['Date'], format = '%d/%m/%y')
 #            except ValueError:
 #                pass
             df.to_csv(f)
     
-    df = pd.read_csv(new_csv) #This needs to run on every run because otherwise 'Date' won't be set to index_col if btc_history_mdates is created. 
+    df = pd.read_csv(new_csv)
     df.drop(df.columns[0], axis=1, inplace = True)
     
     return df
 
-df = compile_data() #Remember 
+df = compile_data() 
 
 df_NVT = nvt.nvt_signal(df = df) 
 
@@ -62,7 +62,7 @@ ma_df = moving_average()
 
 #Commission used is the market order fee on kraken. The change from 0.0005 (Binance's fee) is noticeable but the effect is not substantial
 def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001): 
-    MA_df = moving_average([20,50])
+    MA_df = moving_average()
     
     Benchmark_Balance = BStrat.benchmark_strategy(Equity2 = Equity, ma_df = MA_df) #Go to Benchmark_Strategy
     
@@ -90,7 +90,7 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
             #Open Long
             if Coins_Owned == 0:
                 Coins_Owned = (Balance[-1]/df_NVT['Close'][i])*(1-commission)
-                plt.axvline(x = i+1, color='#32CD32') #Plus 1 had to be added as lines were 1 day to early compared to the buy in price. Could be because index values are being used. 
+                plt.axvline(x = i+1, color='#32CD32') #Plus 1 had to be added as lines were 1 day to early compared to the buy in price. This is because index values are being used for iteration. 
             Shorts_Allowed = True
         #End Long And Go Short
         elif df_NVT.iloc[i,1] >= 170  and df_NVT.iloc[i-1,1] < 170 and Shorts_Allowed == True:
@@ -111,7 +111,7 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
             Balance.append(Balance[-1])
         
         #Daily Balance of Strategy. Shows how the portfolio changes every day. 
-        if Coins_Owned > 0: #The coinsowned already has a comission applied to it. You need to focus on the short commissions. 
+        if Coins_Owned > 0:
             Strategy_Balance.append(df_NVT['Close'][i]*Coins_Owned) 
             
 #        elif CoinsOwed > 0:
@@ -124,8 +124,7 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
         
         
     #HODL
-    HODL = pd.Series(0, index=[i for i in range(Hodl_Index)]).append(df_NVT['Close'][Hodl_Index:]*Hodl_Coins) #Sooo much better and concise...always, always try and use code you have already written, from the get go, makes the code look so much cleaner. 
-    #You reduced long lines into 1 long line and a couple variable assignments above. Code alot more understandle.
+    HODL = pd.Series(0, index=[i for i in range(Hodl_Index)]).append(df_NVT['Close'][Hodl_Index:]*Hodl_Coins)
 
     #Sortino Ratios
     HODL_SR = round(sr.sortino_ratio(Y = HODL[175:]),3)
@@ -139,8 +138,8 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
     plt.plot(Benchmark_Balance, label ='Benchmark Balance', color ='b')
     plt.plot(HODL, label = 'Hodl'+", Buy Date: " +df_NVT['Time'][Hodl_Index], color = 'r')
     plt.plot(Strategy_Balance, label  = 'NVT Strategy', color ='g')
-    plt.plot(df_NVT['Close'])
-    #plt.plot(Balance) #The Balance changes coincide with the vertical lines which is correct.
+    #plt.plot(df_NVT['Close'])
+    #plt.plot(Balance)
     plt.plot([None], [None], ' ', label="Strategy SR: "+str(Benchmark_Strategy_SR))
     plt.plot([None], [None], ' ', label="Hodl SR: "+str(HODL_SR))
     plt.plot([None], [None], ' ', label="Strategy SR: "+str(Strategy_SR))
