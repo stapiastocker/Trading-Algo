@@ -100,12 +100,12 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
                 Coins_Owned = 0
                 plt.axvline(x = i, color='r')
             #Open Short
-#            if CoinsOwed == 0:
+#            if Coins_Owed == 0:
 #                if Balance[-1] < 500000: #500,000 is margin limit in kraken
 #                    Short_equity = Balance[-1]
 #                else:
 #                    Short_equity = 500000
-#                CoinsOwed = (Short_equity/df_NVT['Close'][i])*(1+commission)
+#                Coins_Owed = (Short_equity/df_NVT['Close'][i])*(1+commission)
 #                plt.axvline(x = i+1, color='r')
         else:
             Balance.append(Balance[-1])
@@ -114,8 +114,9 @@ def strategy(Equity = 1000, commission = 0.0026, rollover_fee = 0.0001):
         if Coins_Owned > 0:
             Strategy_Balance.append(df_NVT['Close'][i]*Coins_Owned) 
             
-#        elif CoinsOwed > 0:
-#            Strategy_Balance.append(Balance[-1] + (Short_equity*(1-rollover_fee)**6 - df_NVT['Close'][i]*CoinsOwed))
+#        elif Coins_Owed > 0:
+#            Strategy_Balance.append(Balance[-1] + (Short_equity*(1-rollover_fee)**6 - df_NVT['Close'][i]*Coins_Owed))
+
             #print("Date: " +str(df_NVT['Time'][i]) + ", Balance: "+str(Balance[-1]) + ", Strategy Balance: " + str(Strategy_Balance[-1]))
             #print("Date: " +str(df_NVT['Time'][i]) +" "+ str(short_test))
         
